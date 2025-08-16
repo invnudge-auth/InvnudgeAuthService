@@ -1,0 +1,22 @@
+# secrets
+.env
+*.env
+.env.*
+.envrc
+.envrc.*
+
+# VCS
+.git
+.gitignore
+
+# cash
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+*.swp
+
+# logs
+logs
+*.log

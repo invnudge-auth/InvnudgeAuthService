@@ -1,0 +1,18 @@
+# не отправлять секреты и мусор в Cloud Build
+.env
+*.env
+.env.*
+.envrc
+.envrc.*
+
+# VCS и прочее
+.git
+.gitignore
+
+# кэш/артефакты
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.DS_Store
+*.swp
