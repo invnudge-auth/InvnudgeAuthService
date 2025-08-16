@@ -21,7 +21,7 @@ from app.services.users import user_service
 load_dotenv()
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-router = APIRouter()
+router = APIRouter(tags=["Xero OAuth"])
 
 
 @router.get("/auth/xero")
