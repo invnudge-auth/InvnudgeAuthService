@@ -39,8 +39,10 @@ async def xero_auth(
     Returns:
         RedirectResponse: Redirects the user to Xero's OAuth2 authorization page.
     """
-    if not await user_service.user_exists(user_id, user_hash):
-        raise HTTPException(status_code=404, detail="User not found")
+    exists, status, message = await user_service.user_exists(user_id, user_hash)
+
+    if not exists:
+        raise HTTPException(status_code=status, detail=message)
     return RedirectResponse(
         f"{XERO_AUTH_URL}?response_type=code"
         f"&client_id={XERO_CLIENT_ID}"

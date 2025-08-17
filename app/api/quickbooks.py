@@ -39,8 +39,10 @@ async def quickbooks_auth(
     Returns:
         RedirectResponse: Redirects to QuickBooks OAuth2 login/consent page.
     """
-    if not await user_service.user_exists(user_id, user_hash):
-        raise HTTPException(status_code=404, detail="User not found")
+    exists, status, message = await user_service.user_exists(user_id, user_hash)
+
+    if not exists:
+        raise HTTPException(status_code=status, detail=message)
 
     scope = "com.intuit.quickbooks.accounting openid profile email phone address"
 

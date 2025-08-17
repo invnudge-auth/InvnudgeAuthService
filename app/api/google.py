@@ -36,8 +36,10 @@ async def google_login(
         RedirectResponse: Redirects to Google's OAuth2 login page.
     """
 
-    if not await user_service.user_exists(user_id, user_hash):
-        raise HTTPException(status_code=404, detail="User not found")
+    exists, status, message = await user_service.user_exists(user_id, user_hash)
+
+    if not exists:
+        raise HTTPException(status_code=status, detail=message)
     return RedirectResponse(
         f"{config.GOOGLE_AUTH_URL}?client_id={config.GOOGLE_CLIENT_ID}"
         f"&redirect_uri={urllib.parse.quote(config.GOOGLE_REDIRECT_URI)}"

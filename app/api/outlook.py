@@ -38,8 +38,10 @@ async def outlook_auth(
     Returns:
         RedirectResponse: Redirects to Microsoft's OAuth2 login page.
     """
-    if not await user_service.user_exists(user_id, user_hash):
-        raise HTTPException(status_code=404, detail="User not found")
+    exists, status, message = await user_service.user_exists(user_id, user_hash)
+
+    if not exists:
+        raise HTTPException(status_code=status, detail=message)
     return RedirectResponse(
         f"{OUTLOOK_AUTH_URL}?client_id={OUTLOOK_CLIENT_ID}"
         f"&response_type=code"

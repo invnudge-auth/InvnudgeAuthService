@@ -1,22 +1,17 @@
 import httpx
-
 from app.config import SUPABASE_URL, SUPABASE_KEY
 
 
 class UserService:
 
     @staticmethod
-    async def user_exists(user_id: str, user_hash: str) -> bool:
+    async def user_exists(user_id: str, user_hash: str) -> tuple[bool, int, str]:
         """
-            Asynchronously checks if a user with the given `user_id` and `user_hash`
+            Checks if a user with the given `user_id` and `user_hash`
             exists in the `users` table.
 
-            Args:
-                user_id (str): The UUID of the user.
-                user_hash (str): The UUID-based hash associated with the user.
-
-            Returns:
-                bool: True if the user exists, otherwise False.
+        Returns:
+            (exists, status_code, message)
         """
         async with httpx.AsyncClient() as client:
             resp = await client.get(
@@ -29,8 +24,15 @@ class UserService:
                     "Authorization": f"Bearer {SUPABASE_KEY}"
                 }
             )
+
+            if resp.status_code != 200:
+                return False, resp.status_code, resp.text
+
             data = resp.json()
-            return bool(data)
+            if not data:
+                return False, 404, "User not found"
+
+            return True, 200, "User exists"
 
 
 user_service = UserService()
