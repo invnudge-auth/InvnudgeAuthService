@@ -20,6 +20,7 @@ router = APIRouter(tags=["QuickBooks OAuth"])
 @router.get("/auth/quickbooks")
 async def quickbooks_auth(
         user_id: str = Query(...),
+        user_hash: str = Query(...),
         user_service: UserService = Depends(get_user_service)):
     """
     Initiates the QuickBooks OAuth2 login process.
@@ -31,12 +32,14 @@ async def quickbooks_auth(
         user_id (int): The ID of the user initiating the OAuth login.
                        Passed via 'state' parameter to link QuickBooks account
                        to the correct application user.
-        user_service: service for checking if the user exists.
+        user_hash (str): A UUID-based hash associated with the user, used for
+            additional verification and passed via the 'state' parameter.
+        user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects to QuickBooks OAuth2 login/consent page.
     """
-    if not await user_service.user_exists(user_id):
+    if not await user_service.user_exists(user_id, user_hash):
         raise HTTPException(status_code=404, detail="User not found")
 
     scope = "com.intuit.quickbooks.accounting openid profile email phone address"

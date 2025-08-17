@@ -1,22 +1,19 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import RedirectResponse
-import httpx
 from supabase import create_client
 from dotenv import load_dotenv
-import base64
 
+from app.api.dependencies import get_user_service
 from app.config import (
     SUPABASE_URL,
     SUPABASE_KEY,
     XERO_AUTH_URL,
-    XERO_TOKEN_URL,
-    XERO_CONNECTIONS_URL,
     XERO_CLIENT_ID,
-    XERO_CLIENT_SECRET,
-    XERO_REDIRECT_URI, FRONTEND_XERO_URL
+    XERO_REDIRECT_URI,
+    FRONTEND_XERO_URL
 )
 from app.services.OAuthService import oauth_service
-from app.services.users import user_service
+from app.services.users import UserService
 
 load_dotenv()
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
@@ -25,18 +22,24 @@ router = APIRouter(tags=["Xero OAuth"])
 
 
 @router.get("/auth/xero")
-async def xero_auth(user_id: str):
+async def xero_auth(
+        user_id: str,
+        user_hash: str,
+        user_service: UserService = Depends(get_user_service)):
     """
     Initiates the Xero OAuth2 login process.
 
     Args:
         user_id (str): The ID of the user initiating the OAuth login.
                        Passed via the 'state' parameter to track the user.
+        user_hash (str): A UUID-based hash associated with the user, used for
+            additional verification and passed via the 'state' parameter.
+        user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects the user to Xero's OAuth2 authorization page.
     """
-    if not await user_service.user_exists(user_id):
+    if not await user_service.user_exists(user_id, user_hash):
         raise HTTPException(status_code=404, detail="User not found")
     return RedirectResponse(
         f"{XERO_AUTH_URL}?response_type=code"

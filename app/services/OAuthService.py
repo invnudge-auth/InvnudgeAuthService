@@ -40,7 +40,7 @@ class OAuthService:
                 "picture": user_info.get("picture"),
                 "access_token": tokens.get("access_token"),
                 "refresh_token": tokens.get("refresh_token"),
-                "user_id": int(user_id)
+                "user_id": user_id
             }, on_conflict="user_id").execute()
 
     async def handle_outlook_callback(self, code: str, user_id: str):

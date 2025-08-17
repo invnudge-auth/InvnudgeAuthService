@@ -16,6 +16,7 @@ supabase = create_client(config.SUPABASE_URL, config.SUPABASE_KEY)
 @router.get("/auth/google")
 async def google_login(
         user_id: str = Query(...),
+        user_hash: str = Query(...),
         user_service: UserService = Depends(get_user_service)
 ):
     """
@@ -25,13 +26,17 @@ async def google_login(
     requesting access to their email, profile, and basic account information.
 
     Args:
-        user_id (str): The ID of the user initiating the OAuth login.
-                       Passed via the 'state' parameter to track the user.
-        user_service: service for checking existing user
+        user_id (str): The UUID of the user initiating the OAuth login.
+                       Used together with user_hash to validate the user.
+        user_hash (str): A UUID-based hash associated with the user,
+                         used for additional verification and passed via the 'state' parameter.
+        user_service (UserService): Service for checking existing user.
+
     Returns:
         RedirectResponse: Redirects to Google's OAuth2 login page.
     """
-    if not await user_service.user_exists(user_id):
+
+    if not await user_service.user_exists(user_id, user_hash):
         raise HTTPException(status_code=404, detail="User not found")
     return RedirectResponse(
         f"{config.GOOGLE_AUTH_URL}?client_id={config.GOOGLE_CLIENT_ID}"

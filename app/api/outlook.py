@@ -20,6 +20,7 @@ router = APIRouter(tags=["Outlook OAuth"])
 @router.get("/auth/outlook")
 async def outlook_auth(
         user_id: str = Query(...),
+        user_hash: str = Query(...),
         user_service: UserService = Depends(get_user_service)):
     """
     Initiates the Outlook OAuth2 login process.
@@ -29,13 +30,15 @@ async def outlook_auth(
 
     Args:
         user_id (int): The ID of the user initiating the OAuth login.
-                       Passed via 'state' parameter to track the user.
-        user_service: service for checking existing user
+            Passed via 'state' parameter to track the user.
+        user_hash (str): A UUID-based hash associated with the user, used for
+            additional verification and passed via the 'state' parameter.
+        user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects to Microsoft's OAuth2 login page.
     """
-    if not await user_service.user_exists(user_id):
+    if not await user_service.user_exists(user_id, user_hash):
         raise HTTPException(status_code=404, detail="User not found")
     return RedirectResponse(
         f"{OUTLOOK_AUTH_URL}?client_id={OUTLOOK_CLIENT_ID}"
