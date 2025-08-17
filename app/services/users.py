@@ -22,8 +22,7 @@ class UserService:
             resp = await client.get(
                 f"{SUPABASE_URL}/rest/v1/users",
                 params={
-                    "id": f"eq.{user_id}",
-                    "user_hash": f"eq.{user_hash}"
+                    "and": f"(id.eq.{user_id},user_hash.eq.{user_hash})"
                 },
                 headers={
                     "apikey": SUPABASE_KEY,
