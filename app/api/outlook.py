@@ -53,7 +53,7 @@ async def outlook_auth(
 
 
 @router.get("/auth/outlook/callback")
-async def outlook_callback(code: str, state: int = Query(...)):
+async def outlook_callback(code: str, state: str = Query(...)):
     """
     Handles Outlook OAuth2 callback after user authentication.
 

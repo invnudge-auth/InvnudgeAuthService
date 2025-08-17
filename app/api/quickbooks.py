@@ -59,7 +59,7 @@ async def quickbooks_auth(
 async def quickbooks_callback(
         code: str,
         realmId: str,
-        state: int = Query(...)):
+        state: str = Query(...)):
     """
     Handles QuickBooks OAuth2 callback after user authentication.
 
