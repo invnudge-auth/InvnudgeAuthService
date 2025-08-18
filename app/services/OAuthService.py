@@ -43,6 +43,11 @@ class OAuthService:
                 "user_id": user_id
             }, on_conflict="user_id").execute()
 
+            # Update users table: set is_email_service_connected = TRUE
+            supabase.table("users").update({
+                "is_email_service_connected": True
+            }).eq("id", user_id).execute()
+
     async def handle_outlook_callback(self, code: str, user_id: str):
         """
         Handles OAuth callback for Outlook provider.
@@ -87,6 +92,11 @@ class OAuthService:
             "user_id": user_id  # ensure we link to the correct user
         }, on_conflict="user_id").execute()
 
+        # Update users table: set is_email_service_connected = TRUE
+        supabase.table("users").update({
+            "is_email_service_connected": True
+        }).eq("id", user_id).execute()
+
     async def handle_xero_callback(self, code: str, user_id: str):
         """
         Handles OAuth callback for Xero provider.
@@ -97,7 +107,8 @@ class OAuthService:
         """
         async with httpx.AsyncClient() as client:
             basic_auth = base64.b64encode(
-                f"{config.XERO_CLIENT_ID}:{config.XERO_CLIENT_SECRET}".encode()).decode()
+                f"{config.XERO_CLIENT_ID}:{config.XERO_CLIENT_SECRET}".encode()
+            ).decode()
 
             token_resp = await client.post(
                 config.XERO_TOKEN_URL,
@@ -120,8 +131,16 @@ class OAuthService:
             )
             connections = connections_resp.json()
 
-        tenant_id = connections[0].get("tenantId") if connections else None
-        tenant_name = connections[0].get("tenantName") if connections else None
+            tenant_id = connections[0].get("tenantId") if connections else None
+            tenant_name = connections[0].get(
+                "tenantName") if connections else None
+
+            userinfo_resp = await client.get(
+                "https://identity.xero.com/connect/userinfo",
+                headers={"Authorization": f"Bearer {access_token}"}
+            )
+            user_info = userinfo_resp.json()
+            email = user_info.get("email")
 
         supabase.table("xero_users").upsert({
             "tenant_id": tenant_id,
@@ -129,8 +148,13 @@ class OAuthService:
             "access_token": tokens.get("access_token"),
             "refresh_token": tokens.get("refresh_token"),
             "id_token": tokens.get("id_token"),
-            "user_id": user_id  # Save the user_id from state
+            "user_id": user_id,
+            "email": email
         }, on_conflict="user_id").execute()
+
+        supabase.table("users").update({
+            "is_invoice_service_connected": True,
+        }).eq("id", user_id).execute()
 
     async def handle_quickbooks_callback(self, code: str, realm_id: str, user_id: str):
         """
@@ -177,6 +201,11 @@ class OAuthService:
             "id_token": tokens.get("id_token"),
             "user_id": user_id
         }, on_conflict="user_id").execute()
+
+        # Update users table: set is_invoice_service_connected = TRUE
+        supabase.table("users").update({
+            "is_invoice_service_connected": True
+        }).eq("id", user_id).execute()
 
 
 oauth_service = OAuthService()
