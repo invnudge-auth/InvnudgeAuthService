@@ -19,8 +19,7 @@ router = APIRouter(tags=["QuickBooks OAuth"])
 
 @router.get("/auth/quickbooks")
 async def quickbooks_auth(
-        user_id: str = Query(...),
-        user_hash: str = Query(...),
+        state: str = Query(...),
         user_service: UserService = Depends(get_user_service)):
     """
     Initiates the QuickBooks OAuth2 login process.
@@ -29,17 +28,15 @@ async def quickbooks_auth(
     requesting access to accounting, profile, email, phone and address info.
 
     Args:
-        user_id (int): The ID of the user initiating the OAuth login.
-                       Passed via 'state' parameter to link QuickBooks account
-                       to the correct application user.
-        user_hash (str): A UUID-based hash associated with the user, used for
-            additional verification and passed via the 'state' parameter.
+        state (str): Current user state.
         user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects to QuickBooks OAuth2 login/consent page.
     """
-    exists, status, message = await user_service.user_exists(user_id, user_hash)
+    user = state.split('/')
+    # first part is user_id, second one is user_hash
+    exists, status, message = await user_service.user_exists(user[0], user[-1])
 
     if not exists:
         raise HTTPException(status_code=status, detail=message)
@@ -51,7 +48,7 @@ async def quickbooks_auth(
         f"&client_id={QUICKBOOKS_CLIENT_ID}"
         f"&redirect_uri={QUICKBOOKS_REDIRECT_URI}"
         f"&scope={scope}"
-        f"&state={user_id}"
+        f"&state={state}"
     )
 
 
@@ -73,10 +70,10 @@ async def quickbooks_callback(
     Args:
         code (str): Authorization code returned by QuickBooks.
         realmId (str): QuickBooks company (realm) ID.
-        state (int): User ID passed through the 'state' parameter.
+        state (str): User ID and hash passed through the 'state' parameter for tracking.
 
     Returns:
         RedirectResponse: Redirects to frontend with authentication status.
     """
     await oauth_service.handle_quickbooks_callback(code, realmId, state)
-    return RedirectResponse(url=FRONTEND_QUICKBOOKS_URL)
+    return RedirectResponse(url=FRONTEND_QUICKBOOKS_URL+f'&state={state}')

@@ -19,8 +19,7 @@ router = APIRouter(tags=["Outlook OAuth"])
 
 @router.get("/auth/outlook")
 async def outlook_auth(
-        user_id: str = Query(...),
-        user_hash: str = Query(...),
+        state: str = Query(...),
         user_service: UserService = Depends(get_user_service)):
     """
     Initiates the Outlook OAuth2 login process.
@@ -29,16 +28,15 @@ async def outlook_auth(
     requesting access to profile, email, and basic account information.
 
     Args:
-        user_id (int): The ID of the user initiating the OAuth login.
-            Passed via 'state' parameter to track the user.
-        user_hash (str): A UUID-based hash associated with the user, used for
-            additional verification and passed via the 'state' parameter.
+        state (str): Current user state.
         user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects to Microsoft's OAuth2 login page.
     """
-    exists, status, message = await user_service.user_exists(user_id, user_hash)
+    user = state.split('/')
+    # first part is user_id, second one is user_hash
+    exists, status, message = await user_service.user_exists(user[0], user[-1])
 
     if not exists:
         raise HTTPException(status_code=status, detail=message)
@@ -48,7 +46,7 @@ async def outlook_auth(
         f"&redirect_uri={OUTLOOK_REDIRECT_URI}"
         f"&response_mode=query"
         f"&scope=openid profile email offline_access https://graph.microsoft.com/User.Read"
-        f"&state={user_id}"
+        f"&state={state}"
     )
 
 
@@ -66,10 +64,10 @@ async def outlook_callback(code: str, state: str = Query(...)):
 
     Args:
         code (str): Authorization code returned by Outlook.
-        state (int): User ID passed through the 'state' parameter.
+        state (int): User ID and hash passed through the 'state' parameter.
 
     Returns:
         RedirectResponse: Redirects to frontend with authentication status.
     """
     await oauth_service.handle_outlook_callback(code, state)
-    return RedirectResponse(url=FRONTEND_OUTLOOK_URL)
+    return RedirectResponse(url=FRONTEND_OUTLOOK_URL+f'&state={state}')

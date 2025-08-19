@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import RedirectResponse
 from supabase import create_client
 from dotenv import load_dotenv
@@ -23,23 +23,21 @@ router = APIRouter(tags=["Xero OAuth"])
 
 @router.get("/auth/xero")
 async def xero_auth(
-        user_id: str,
-        user_hash: str,
+        state: str = Query(...),
         user_service: UserService = Depends(get_user_service)):
     """
     Initiates the Xero OAuth2 login process.
 
     Args:
-        user_id (str): The ID of the user initiating the OAuth login.
-                       Passed via the 'state' parameter to track the user.
-        user_hash (str): A UUID-based hash associated with the user, used for
-            additional verification and passed via the 'state' parameter.
+        state (str): Current user state.
         user_service (UserService): Service for checking existing user.
 
     Returns:
         RedirectResponse: Redirects the user to Xero's OAuth2 authorization page.
     """
-    exists, status, message = await user_service.user_exists(user_id, user_hash)
+    user = state.split('/')
+    # first part is user_id, second one is user_hash
+    exists, status, message = await user_service.user_exists(user[0], user[-1])
 
     if not exists:
         raise HTTPException(status_code=status, detail=message)
@@ -48,7 +46,7 @@ async def xero_auth(
         f"&client_id={XERO_CLIENT_ID}"
         f"&redirect_uri={XERO_REDIRECT_URI}"
         f"&scope=openid profile email offline_access accounting.transactions accounting.contacts"
-        f"&state={user_id}"  # Track the user
+        f"&state={state}"  # Track the user
     )
 
 
@@ -65,10 +63,10 @@ async def xero_callback(code: str, state: str):
 
     Args:
         code (str): Authorization code returned by Xero.
-        state (str): User ID passed through the 'state' parameter for tracking.
+        state (str): User ID and hash passed through the 'state' parameter for tracking.
 
     Returns:
         RedirectResponse: Redirects to the frontend with authentication status.
     """
     await oauth_service.handle_xero_callback(code, state)
-    return RedirectResponse(url=FRONTEND_XERO_URL)
+    return RedirectResponse(url=FRONTEND_XERO_URL+f'&state={state}')

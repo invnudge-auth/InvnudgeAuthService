@@ -8,14 +8,15 @@ supabase = create_client(config.SUPABASE_URL, config.SUPABASE_KEY)
 
 
 class OAuthService:
-    async def handle_google_callback(self, code: str, user_id: str):
+    async def handle_google_callback(self, code: str, state: str):
         """
         Handles OAuth callback for Google provider.
 
         Args:
             code (str): Authorization code returned by the provider.
-            user_id (int): The ID of the user initiating the OAuth login.
+            state (str): State with user ID and hash of the user initiating the OAuth login.
         """
+        user_id = state.split('/')[0]
         async with httpx.AsyncClient() as client:
             token_resp = await client.post(config.GOOGLE_TOKEN_URL, data={
                 "code": code,
@@ -48,14 +49,15 @@ class OAuthService:
                 "is_email_service_connected": True
             }).eq("id", user_id).execute()
 
-    async def handle_outlook_callback(self, code: str, user_id: str):
+    async def handle_outlook_callback(self, code: str, state: str):
         """
         Handles OAuth callback for Outlook provider.
 
         Args:
             code (str): Authorization code returned by the provider.
-            user_id (int): The ID of the user initiating the OAuth login.
+            state (str): The ID and hash of the user initiating the OAuth login.
         """
+        user_id = state.split('/')[0]
         async with httpx.AsyncClient() as client:
             # 1. Exchange code for tokens
             token_resp = await client.post(
@@ -97,14 +99,15 @@ class OAuthService:
             "is_email_service_connected": True
         }).eq("id", user_id).execute()
 
-    async def handle_xero_callback(self, code: str, user_id: str):
+    async def handle_xero_callback(self, code: str, state: str):
         """
         Handles OAuth callback for Xero provider.
 
         Args:
             code (str): Authorization code returned by the provider.
-            user_id (int): The ID of the user initiating the OAuth login.
+            state (str): The ID and hash of the user initiating the OAuth login.
         """
+        user_id = state.split('/')[0]
         async with httpx.AsyncClient() as client:
             basic_auth = base64.b64encode(
                 f"{config.XERO_CLIENT_ID}:{config.XERO_CLIENT_SECRET}".encode()
@@ -156,15 +159,16 @@ class OAuthService:
             "is_invoice_service_connected": True,
         }).eq("id", user_id).execute()
 
-    async def handle_quickbooks_callback(self, code: str, realm_id: str, user_id: str):
+    async def handle_quickbooks_callback(self, code: str, realm_id: str, state: str):
         """
         Handles OAuth callback for QuickBooks provider.
 
         Args:
             code (str): Authorization code returned by QuickBooks.
             realm_id (str): The QuickBooks company (realm) ID.
-            user_id (int): The ID of the user initiating the OAuth login.
+            state (str): The state of the user initiating the OAuth login.
         """
+        user_id = state.split('/')[0]
         async with httpx.AsyncClient() as client:
             basic_auth = base64.b64encode(
                 f"{config.QUICKBOOKS_CLIENT_ID}:{config.QUICKBOOKS_CLIENT_SECRET}".encode()
