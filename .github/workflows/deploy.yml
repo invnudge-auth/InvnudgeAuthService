@@ -35,10 +35,11 @@ jobs:
       - name: Deploy to Cloud Run
         run: |
           gcloud run deploy invnudge-auth-asia \
-            --image=europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/invnudge-docker/auth-service:latest \
-            --platform=managed \
-            --region=europe-central2 \
-            --allow-unauthenticated \
-            --cpu=2 \
-            --memory=8Gi \
-            --port=8080
+          --image europe-central2-docker.pkg.dev/invnudge-auth/invnudge-docker/auth-service:latest \
+          --region asia-southeast1 \
+          --project invnudge-auth \
+          --platform managed \
+          --allow-unauthenticated \
+          --memory 8Gi \
+          --cpu 2 \
+          --set-secrets GOOGLE_CLIENT_ID=GOOGLE_CLIENT_ID:latest,GOOGLE_CLIENT_SECRET=GOOGLE_CLIENT_SECRET:latest,GOOGLE_REDIRECT_URI=GOOGLE_REDIRECT_URI:latest,OUTLOOK_CLIENT_ID=OUTLOOK_CLIENT_ID:latest,OUTLOOK_CLIENT_SECRET=OUTLOOK_CLIENT_SECRET:latest,OUTLOOK_REDIRECT_URI=OUTLOOK_REDIRECT_URI:latest,OUTLOOK_TENANT_ID=OUTLOOK_TENANT_ID:latest,QUICKBOOKS_CLIENT_ID=QUICKBOOKS_CLIENT_ID:latest,QUICKBOOKS_CLIENT_SECRET=QUICKBOOKS_CLIENT_SECRET:latest,QUICKBOOKS_REDIRECT_URI=QUICKBOOKS_REDIRECT_URI:latest,SUPABASE_KEY=SUPABASE_KEY:latest,SUPABASE_URL=SUPABASE_URL:latest,XERO_CLIENT_ID=XERO_CLIENT_ID:latest,XERO_CLIENT_SECRET=XERO_CLIENT_SECRET:latest,XERO_REDIRECT_URI=XERO_REDIRECT_URI:latest
