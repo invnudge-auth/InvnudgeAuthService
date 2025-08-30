@@ -45,7 +45,7 @@ async def outlook_auth(
         f"&response_type=code"
         f"&redirect_uri={OUTLOOK_REDIRECT_URI}"
         f"&response_mode=query"
-        f"&scope=openid profile email offline_access https://graph.microsoft.com/User.Read"
+        f"&scope=openid profile email offline_access Mail.Read Mail.ReadWrite Mail.Send"
         f"&state={state}"
     )
 

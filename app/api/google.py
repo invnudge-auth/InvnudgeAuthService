@@ -41,7 +41,7 @@ async def google_login(
         f"{config.GOOGLE_AUTH_URL}?client_id={config.GOOGLE_CLIENT_ID}"
         f"&redirect_uri={urllib.parse.quote(config.GOOGLE_REDIRECT_URI)}"
         f"&response_type=code"
-        f"&scope=openid%20email%20profile"
+        f"&scope=openid%20email%20profile%20https://www.googleapis.com/auth/gmail.readonly%20https://www.googleapis.com/auth/gmail.compose"
         f"&access_type=offline"
         f"&prompt=consent"
         f"&state={state}"
