@@ -1,13 +1,12 @@
+# === START: NEW main.py CODE ===
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from app.api import google, outlook, xero, quickbooks
 from uuid import UUID
 
-# --- NEW: Import the secure Supabase client from your config ---
-# Your main.py shows you import from 'app.api', so your
-# config.py file is probably in an 'app' folder too.
-# If config.py is in the root, change this to: from config import supabase
-from app.config import supabase 
+# --- NEW: Import the secure Supabase client from config.py ---
+from config import supabase 
 
 app = FastAPI(
     title="Invnudge OAuth API",
@@ -17,14 +16,13 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"], # You can make this stricter later
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # --- NEW: Framer Status Endpoint ---
-# This code is now much cleaner because it uses the imported client
 @app.get("/auth/status")
 async def get_user_status(user_id: UUID):
     """
