@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import google, outlook, xero, quickbooks
+from app.api import google, outlook, xero, quickbooks, status
 
 app = FastAPI(
     title="Invnudge OAuth API",
