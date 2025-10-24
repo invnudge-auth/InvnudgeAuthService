@@ -54,3 +54,7 @@ FRONTEND_GOOGLE_URL = "https://invnudge.com/setup-3?service=google&status=connec
 FRONTEND_OUTLOOK_URL = "https://invnudge.com/setup-3?service=outlook&status=connected"
 FRONTEND_XERO_URL = "https://invnudge.com/setup-2?service=xero&status=connected"
 FRONTEND_QUICKBOOKS_URL = "https://invnudge.com/setup-2?service=quickbooks&status=connected"
+
+from supabase import create_client, Client
+
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
