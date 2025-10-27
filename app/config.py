@@ -48,7 +48,7 @@ QUICKBOOKS_REDIRECT_URI = os.getenv("QUICKBOOKS_REDIRECT_URI")
 
 QUICKBOOKS_AUTH_URL = "https://appcenter.intuit.com/connect/oauth2"
 QUICKBOOKS_TOKEN_URL = "https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer"
-QUICKBOOKS_USERINFO_URL = "https://sandbox-accounts.platform.intuit.com/v1/openid_connect/userinfo"
+QUICKBOOKS_USERINFO_URL = "https://accounts.platform.intuit.com/v1/openid_connect/userinfo"
 
 FRONTEND_GOOGLE_URL = "https://invnudge.com/setup-3?service=google&status=connected"
 FRONTEND_OUTLOOK_URL = "https://invnudge.com/setup-3?service=outlook&status=connected"
